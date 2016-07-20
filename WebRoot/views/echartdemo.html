@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>echartdemo.html</title>
+
+<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+<meta http-equiv="description" content="this is my page">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<!--<link rel="stylesheet" type="text/css" href="./styles.css">-->
+
+</head>
+
+<script src="../js/echarts.min.js"></script>
+
+<body>
+	<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+	<div id="graphlight" style="width: 600px;height:400px;"></div>
+	<script type="text/javascript">
+		// 基于准备好的dom，初始化echarts实例
+		var myChart = echarts.init(document.getElementById('graphlight'));
+		// 指定图表的配置项和数据
+		var schema = [ {
+			name : 'light',
+			index : 1,
+			text : 'light'
+		}, {
+			name : 'temp',
+			index : 2,
+			text : 'temp'
+		}, {
+			name : 'humi',
+			index : 3,
+			text : 'humi'
+		}, {
+			name : 'soiltemp',
+			index : 4,
+			text : 'soiltemp'
+		}, {
+			name : 'soilhumi',
+			index : 5,
+			text : 'soilhumi'
+		}, {
+			name : '等级',
+			index : 6,
+			text : '等级'
+		} ];
+
+		var rawData = [ [ 186, 142, 192, 3.88, 93, "1", "原始环境" ],
+				[ 57, 31, 54, 0.96, 32, "0", "原始环境" ],
+				[ 22, 8, 17, 0.48, 23, "2", "原始环境" ],
+
+				[ 70, 69, 120, 1.198, 65, "0", "MD聚类" ],
+				[ 77, 105, 178, 2.549, 64, "0", "MD聚类" ],
+				[ 109, 68, 87, 0.996, 74, "1", "MD聚类" ],
+				[ 73, 68, 97, 0.905, 51, "2", "MD聚类" ],
+				[ 73, 102, 182, 2.787, 44, "2", "MD聚类" ],
+
+				[ 87, 62, 100, 1, 72, "0", "ML聚类" ],
+				[ 168, 128, 172, 1.49, 97, "1", "ML聚类" ],
+				[ 65, 45, 51, 0.74, 39, "0", "ML聚类" ],
+				[ 39, 24, 38, 0.61, 47, "2", "ML聚类" ],
+				[ 39, 24, 39, 0.59, 50, "2", "ML聚类" ],
+				[ 93, 68, 96, 1.05, 79, "0", "ML聚类" ],
+				[ 188, 143, 197, 1.66, 99, "1", "ML聚类" ],
+				[ 174, 131, 174, 1.55, 108, "1", "ML聚类" ],
+				[ 187, 143, 201, 1.39, 89, "1", "ML聚类" ] ];
+
+		var CATEGORY_DIM_COUNT = 5;
+		var GAP = 1;
+		var BASE_LEFT = 5;
+		var BASE_TOP = 10;
+		var GRID_WIDTH = (100 - BASE_LEFT - GAP) / CATEGORY_DIM_COUNT - GAP;
+		var GRID_HEIGHT = (100 - BASE_TOP - GAP) / CATEGORY_DIM_COUNT - GAP;
+		var CATEGORY_DIM = 6;
+		var SYMBOL_SIZE = 3;
+
+		function retrieveScatterData(data, dimX, dimY) {
+			var result = [];
+			for ( var i = 0; i < data.length; i++) {
+				var item = [ data[i][dimX], data[i][dimY] ];
+				item[CATEGORY_DIM] = data[i][CATEGORY_DIM];
+				result.push(item);
+			}
+			return result;
+		}
+
+		function generateGrids(option) {
+			var index = 0;
+			for ( var i = 0; i < CATEGORY_DIM_COUNT; i++) {
+				for ( var j = 0; j < CATEGORY_DIM_COUNT; j++) {
+					if (CATEGORY_DIM_COUNT - i + j >= CATEGORY_DIM_COUNT) {
+						continue;
+					}
+
+					option.grid.push({
+						left : BASE_LEFT + i * (GRID_WIDTH + GAP) + '%',
+						top : BASE_TOP + j * (GRID_HEIGHT + GAP) + '%',
+						width : GRID_WIDTH + '%',
+						height : GRID_HEIGHT + '%'
+					});
+
+					option.brush.xAxisIndex
+							&& option.brush.xAxisIndex.push(index);
+					option.brush.yAxisIndex
+							&& option.brush.yAxisIndex.push(index);
+
+					option.xAxis.push({
+						splitNumber : 3,
+						position : 'top',
+						axisLine : {
+							show : j === 0,
+							onZero : false
+						},
+						axisTick : {
+							show : j === 0,
+							inside : true
+						},
+						axisLabel : {
+							show : j === 0
+						},
+						type : 'value',
+						gridIndex : index,
+						scale : true
+					});
+
+					option.yAxis.push({
+						splitNumber : 3,
+						position : 'right',
+						axisLine : {
+							show : i === CATEGORY_DIM_COUNT - 1,
+							onZero : false
+						},
+						axisTick : {
+							show : i === CATEGORY_DIM_COUNT - 1,
+							inside : true
+						},
+						axisLabel : {
+							show : i === CATEGORY_DIM_COUNT - 1
+						},
+						type : 'value',
+						gridIndex : index,
+						scale : true
+					});
+
+					option.series.push({
+						type : 'scatter',
+						symbolSize : SYMBOL_SIZE,
+						xAxisIndex : index,
+						yAxisIndex : index,
+						data : retrieveScatterData(rawData, i, j)
+					});
+
+					option.visualMap.seriesIndex.push(option.series.length - 1);
+
+					index++;
+				}
+			}
+		}
+
+		var option = {
+			animation : false,
+			brush : {
+				brushLink : 'all',
+				xAxisIndex : [],
+				yAxisIndex : [],
+				inBrush : {
+					opacity : 1
+				}
+			},
+			visualMap : {
+				type : 'piecewise',
+				categories : [ "原始环境", "ML聚类", "MD聚类" ],
+				dimension : CATEGORY_DIM,
+				orient : 'horizontal',
+				top : 0,
+				left : 'center',
+				inRange : {
+					color : [ '#c23531', '#2f4554', '#61a0a8' ]
+				},
+				outOfRange : {
+					color : '#ddd'
+				},
+				seriesIndex : [ 0 ]
+			},
+			tooltip : {
+				trigger : 'item'
+			},
+			parallelAxis : [ {
+				dim : 0,
+				name : schema[0].text
+			}, {
+				dim : 1,
+				name : schema[1].text
+			}, {
+				dim : 2,
+				name : schema[2].text
+			}, {
+				dim : 3,
+				name : schema[3].text
+			}, {
+				dim : 4,
+				name : schema[4].text
+			}, {
+				dim : 5,
+				name : schema[5].text,
+				type : 'category',
+				data : [ '0', '1', '2' ]
+			} ],
+			parallel : {
+				bottom : '5%',
+				left : '5%',
+				height : '31%',
+				width : '55%',
+				parallelAxisDefault : {
+					type : 'value',
+					name : '光照聚类',
+					nameLocation : 'end',
+					nameGap : 20,
+					splitNumber : 3,
+					nameTextStyle : {
+						fontSize : 14
+					},
+					axisLine : {
+						lineStyle : {
+							color : '#555'
+						}
+					},
+					axisTick : {
+						lineStyle : {
+							color : '#555'
+						}
+					},
+					splitLine : {
+						show : false
+					},
+					axisLabel : {
+						textStyle : {
+							color : '#555'
+						}
+					}
+				}
+			},
+			grid : [],
+			xAxis : [],
+			yAxis : [],
+			series : [ {
+				name : 'parallel',
+				type : 'parallel',
+				smooth : true,
+				lineStyle : {
+					normal : {
+						width : 1,
+						opacity : 0.3
+					}
+				},
+				data : rawData
+			} ]
+		};
+
+		generateGrids(option);
+		// 使用刚指定的配置项和数据显示图表。
+		myChart.setOption(option);
+	</script>
+</body>
+</html>
