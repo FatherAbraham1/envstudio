@@ -8,3 +8,6 @@
 3. 增加了lab.jsp功能，进入最终结果分析的实验室导航
 4. （明天待完成）做聚类数据的数据库引入功能。
 
+date: 2016-7-21
+contents:
+1. add function to pick data from db to organize to scatter kmeans picture.
