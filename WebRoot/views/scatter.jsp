@@ -1,4 +1,4 @@
-<%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
+<%@ page language="java" import="java.util.*,org.liyubo.db.dao.*" pageEncoding="UTF-8"%>
 <%@ page
 	import="java.sql.Connection,java.sql.DriverManager,java.sql.ResultSet,java.sql.SQLException,java.sql.Statement"%>
 <%--创建历史数据显示页面，展示所有历史数据 --%>
@@ -70,26 +70,12 @@
 				index : 6,
 				text : '等级'
 			} ];
-
-			var rawData = [ [ 186, 142, 192, 3.88, 93, "1", "原始环境" ],
-					[ 57, 31, 54, 0.96, 32, "0", "原始环境" ],
-					[ 22, 8, 17, 0.48, 23, "2", "原始环境" ],
-
-					[ 70, 69, 120, 1.198, 65, "0", "MD聚类" ],
-					[ 77, 105, 178, 2.549, 64, "0", "MD聚类" ],
-					[ 109, 68, 87, 0.996, 74, "1", "MD聚类" ],
-					[ 73, 68, 97, 0.905, 51, "2", "MD聚类" ],
-					[ 73, 102, 182, 2.787, 44, "2", "MD聚类" ],
-
-					[ 87, 62, 100, 1, 72, "0", "ML聚类" ],
-					[ 168, 128, 172, 1.49, 97, "1", "ML聚类" ],
-					[ 65, 45, 51, 0.74, 39, "0", "ML聚类" ],
-					[ 39, 24, 38, 0.61, 47, "2", "ML聚类" ],
-					[ 39, 24, 39, 0.59, 50, "2", "ML聚类" ],
-					[ 93, 68, 96, 1.05, 79, "0", "ML聚类" ],
-					[ 188, 143, 197, 1.66, 99, "1", "ML聚类" ],
-					[ 174, 131, 174, 1.55, 108, "1", "ML聚类" ],
-					[ 187, 143, 201, 1.39, 89, "1", "ML聚类" ] ];
+<%
+//处理数据库数据
+SourceDao source = new SourceDao();
+String result = source.getScatter();
+%>
+			var rawData = [<%=result%>];
 
 			var CATEGORY_DIM_COUNT = 5;
 			var GAP = 1;
